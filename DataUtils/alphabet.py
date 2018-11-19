@@ -41,14 +41,13 @@ class CreateAlphabet:
 
     def _build_data(self, train_data=None, dev_data=None, test_data=None):
         """
-
         :param dev_data:
         :param test_data:
         :return:
         """
         assert train_data is not None, "The Train Data Is Not Allow Empty. "
         datasets = []
-        datasets.extend(train_data)  # 此时train_data的类型，extend()只能接受一个参数（列表）
+        datasets.extend(train_data)  # extend 只能接受一个参数
         print("the length of train data {}".format(len(datasets)))
         if dev_data is not None:
             print("tne length of dev data {}".format(len(dev_data)))
@@ -110,7 +109,7 @@ class Alphabet:
         :param data:
         :return:
         """
-        for key in data:  # data {"I": 12, "want": 14, "go": 33}
+        for key in data:  # data {"I": 12, "want": 14, "to": 33}
             if data[key] >= self.min_freq:
                 self.from_string(key)
         self.set_fixed_flag(True)
@@ -137,11 +136,11 @@ class Alphabet:
             return self.words2id[string]
         else:
             if not self.fixed_vocab:
-                newid = self.vocab_size
-                self.id2words.append(string)
+                newid = self.vocab_size  # 首先给定vocab_size = 0
+                self.id2words.append(string)  # 此时的string是key
                 self.words2id[string] = newid
                 self.vocab_size += 1
-                if self.vocab_size >= self.max_cap:
+                if self.vocab_size >= self.max_cap:  # 限定了词表的大小
                     self.fixed_vocab = True
                 return newid
             else:

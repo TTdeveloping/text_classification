@@ -9,7 +9,8 @@ from DataUtils.Embed import Embed
 from DataUtils.common import paddingkey
 from model.Text_Classification import *
 
-def  get_learning_algorithm(config):
+
+def get_learning_algorithm(config):
     """
     :param config:  config
     :return:   optimizer algorithm
@@ -45,7 +46,8 @@ def get_params(config, alphabet):
     print("embed_num : {},class_num : {}".format(config.embed_num,config.label_num))
     print("PaddingID {}".format(config.paddingId))
 
-def  save_dict2file(dict,path):
+
+def save_dict2file(dict,path):
     """
 
     :param dict:  dict
@@ -61,6 +63,7 @@ def  save_dict2file(dict,path):
     file.close()
     print("Save dictionary has been finished.........")
 
+
 def save_dictionary(config):
     """
     :param config: config
@@ -72,15 +75,15 @@ def save_dictionary(config):
         if not os.path.isdir(config.dict_directory):
             os.makedirs(config.dict_directory)
 
-        config.word_dict_path = "/".join([config.dict_directory,config.word_dict])
-        config.label_dict_path = "/".join([config.dict_directory,config.label_dict])
+        config.word_dict_path = "/".join([config.dict_directory, config.word_dict])
+        config.label_dict_path = "/".join([config.dict_directory, config.label_dict])
         print("word_dict_directory ：{}".format(config.word_dict_path))
         print("label_dict_directory : {} ".format(config.label_dict_path))
-        save_dict2file(config.alphabet.word_alphabet.words2id,config.word_dict_path)
-        save_dict2file(config.alphabet.label_alphabet.words2id,config.label_dict_path)
+        save_dict2file(config.alphabet.word_alphabet.words2id, config.word_dict_path)
+        save_dict2file(config.alphabet.label_alphabet.words2id, config.label_dict_path)
         # copy to mu lu
         print("copy dictionaconry to {}".format(config.save_dir))
-        shutil.copytree(config.dict_directory,"/".join([config.save_dir,config.dict_directory]))
+        shutil.copytree(config.dict_directory, "/".join([config.save_dir, config.dict_directory]))
 
 
 
@@ -94,20 +97,21 @@ def preprocessing(config):
      """
     print("processing data............")
     # read file
-    data_loader=DataLoader(path=[config.train_file, config.dev_file, config.test_file], shuffle=True, config=config)
+    data_loader = DataLoader(path=[config.train_file, config.dev_file, config.test_file], shuffle=True, config=config)
     train_data, dev_data, test_data = data_loader.dataload()
     print("train sentence {},dev sentence {},test sentence {}.".format(len(train_data), len(dev_data), len(test_data)))
     data_dict = {"train_data": train_data, "dev_data": dev_data, "test_data": test_data}
+
     if config.save_pkl:
         torch.save(obj=data_dict, f=os.path.join(config.pkl_directory, config.pkl_data))
 
     # create the alphabet
-    alphabet=None
+    alphabet = None
     if config.embed_finetune is False:
         alphabet = CreateAlphabet(min_freq=config.min_freq, train_data=train_data, dev_data=dev_data, test_data=test_data, config=config)
         alphabet.build_vocab()
     if config.embed_finetune is True:
-        alphabet =CreateAlphabet(min_freq=config.min_freq, train_data=train_data, config=config)
+        alphabet = CreateAlphabet(min_freq=config.min_freq, train_data=train_data, config=config)
         alphabet.build_vocab()
     alphabet_dict = {"alphabet": alphabet}
     if config.save_pkl:
@@ -125,7 +129,6 @@ def preprocessing(config):
 
 def pre_embed(config, alphabet):
     """
-
     :param config:
     :param alphabet:
     :return:
@@ -161,8 +164,9 @@ def load_model(config):
     """
     print("********************************************************")
     model = Text_Classification(config)
-
-
+    if config.use_cuda is True:
+       model = model.cuda()
+    return model
 
 def load_data(config):
     """
@@ -174,11 +178,11 @@ def load_data(config):
     start_time = time.time()
     if(config.train is True)and(config.process is True):
         print('PROCESS DATA:')
-    if os.path.exists(config.pkl_directory):shutil.rmtree(config.pkl_directory)
+    if os.path.exists(config.pkl_directory): shutil.rmtree(config.pkl_directory)
     if not os.path.isdir(config.pkl_directory):os.makedirs(config.pkl_directory)
     train_iter, dev_iter, test_iter, alphabet = preprocessing(config)
     config.pretrained_weight = pre_embed(config=config, alphabet=alphabet)
-    end_time = time.time()  # 返回当前时间的时间戳
+    end_time = time.time()
     print("All Data/Alphabet/Iterator Use Time {:.4}".format(end_time - start_time))
     print("***************************************")
     return train_iter, dev_iter, test_iter, alphabet
