@@ -1,10 +1,11 @@
 from model.Cnn import *
 import torch.nn as nn
+
 class Text_Classification(nn.Module):
     """
     Sequence_Label
     """
-    def __init__(self,config):
+    def __init__(self, config):
         super(Text_Classification, self).__init__()
         self.config = config
         # embed
@@ -49,6 +50,16 @@ class Text_Classification(nn.Module):
             int_list.append(int(str))
         return int_list
 
+    def forward(self, word, sentence_length, train=False):
+        """
+        :param word:
+        :param sentence_length:
+        :param train:
+        :return:
+        """
+
+        model_output = self.model(word, sentence_length)
+        return model_output
 
 
 
